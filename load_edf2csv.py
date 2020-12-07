@@ -5,18 +5,21 @@ import os
 
 
 def main():
-    
-    montage = '01_tcp_ar'
-    dataset = 'train'
-    
+
+    dataset = 'dev'
+   
     drives = ['%s:' % d for d in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' if os.path.exists('%s:' % d)]
     drive = [d for d in drives if subprocess.check_output(["cmd","/c vol "+d]).decode().split("\r\n")[0].split(" ").pop()=='Passport'][0]
     
-    groups_dir = '{}\\tuszepi\\edf\\{}\\{}'.format(drive, dataset, montage)
-    groups_dir_res = '{}\\tuszepi\\edf_resampled\\{}\\{}'.format(drive, dataset, montage)
+    montages = ['01_tcp_ar', '02_tcp_le', '03_tcp_ar_a']
+
+    for montage in montages:
     
-    load_edf_data(groups_dir, groups_dir_res, save_dir='{}\\TUH\\data_csv'.format(drive))
-    #print(check_files())
+    	groups_dir = '{}\\tuszepi\\edf\\{}\\{}'.format(drive, dataset, montage)
+    	groups_dir_res = '{}\\tuszepi\\edf_resampled\\{}\\{}'.format(drive, dataset, montage)
+    
+    	load_edf_data(groups_dir, groups_dir_res, save_dir='{}\\TUH\\data_csv\\{}'.format(drive, dataset))
+    	#print(check_files())
 
 
 # %% 
