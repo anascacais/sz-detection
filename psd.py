@@ -3,31 +3,11 @@ import matplotlib.pyplot as plt
 from scipy import signal
 import numpy as np
 import _biosppy.biosppy as bsp
+import _biosppy.biosppy.signals.tools as st
 
-data = pd.read_csv('00000002_s001_t000.csv')
+data = np.load('D:\\TUH\\data_npy\\0103\\00000254_s005_t000.npy')
 
-plt.figure(figsize=(5, 4))
-y1 = data['FP1-FP2'][0:int(250*36.8868)]
-t = np.arange(len(y1))/float(250)
-plt.plot(t, y1)
-plt.title('Background')
-plt.xlabel('Time [s]')
-plt.ylabel('EEG')
-plt.tight_layout()
-
-plt.figure(figsize=(5, 4))
-y2 = data['FP1-FP2'][int(250*36.8868):int(237.2101*250)]
-t = np.arange(len(y2))/float(250)
-plt.plot(t, y2)
-plt.title('Complex partial seizure')
-plt.xlabel('Time [s]')
-plt.ylabel('EEG')
-plt.tight_layout()
-
-#import biosppy as bsp
-
-l = np.vstack((y1, y2[:len(y1)])).transpose()
-res = bsp.signals.eeg.eeg(signal=l, sampling_rate=250., show=False)
+res = bsp.signals.eeg.eeg(signal=np.reshape(data, (-1,1)), sampling_rate=250., show=False)
 
 freqs, psd = signal.periodogram(res['filtered'][:,0], fs=250)
 plt.figure(figsize=(5, 4))
@@ -37,15 +17,6 @@ plt.xlabel('Frequency')
 plt.ylabel('Power')
 plt.tight_layout()
 
-freqs, psd = signal.periodogram(data['FP1-FP2'][int(250*36.8868):int(237.2101*250)], fs=250)
-plt.figure(figsize=(5, 4))
-plt.plot(freqs, psd)
-plt.title('PSD: Complex partial seizure')
-plt.xlabel('Frequency')
-plt.ylabel('Power')
-plt.tight_layout()
-
-import _biosppy.biosppy.signals.tools as st
 
 cutoff = 0.8
 b, a = st.get_filter(ftype='butter',
