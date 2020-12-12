@@ -4,6 +4,7 @@ import os
 import json
 import rereferencing as rr
 import datetime
+import numpy as np
 
 def load_patient_data(patient, patient_dir, patient_dir_res, save_dir):
 
@@ -26,10 +27,10 @@ def load_patient_data(patient, patient_dir, patient_dir_res, save_dir):
         for file in list_files:  
             file_path = os.path.join(session_dir_res, file)
             
-            # Check if csv file already exists
+            # Check if npy file already exists
             file_name = file[:-4]
             print('\t Loading file -- {}'.format(file_name))
-            if not os.path.exists(os.path.join(save_dir, file_name+'.csv')):
+            if not os.path.exists(os.path.join(save_dir, file_name+'.npy')):
                 try:
                     edf = pyedf.EdfReader(file_path)
                 except:
@@ -49,9 +50,9 @@ def load_patient_data(patient, patient_dir, patient_dir_res, save_dir):
                         
                 # get tcp_montage and get chosen channels
                 tcp_montage = patient_dir.split(os.sep)[-3]
-                df = rr.rr(df, tcp_montage)
-                df.to_csv(os.path.join(save_dir, file_name+'.csv'), index=None, header=True)
-                print('\t \t .csv file saved successfully!')
+                rr_array = rr.rr(df, tcp_montage)
+                np.save(os.path.join(save_dir, file_name), rr_array)
+                print('\t \t .npy file saved successfully!')
                 
                 # Save annotations for file
                 file_start_time = edf.getStartdatetime()
@@ -60,7 +61,7 @@ def load_patient_data(patient, patient_dir, patient_dir_res, save_dir):
                 hasAnnot = True
                 
             else:
-                print('\t \t .csv file already exists!')
+                print('\t \t .npy file already exists!')
                 hasAnnot = False
                 
             #### Annotations
