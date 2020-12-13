@@ -3,6 +3,7 @@ import subprocess
 import numpy as np
 import os
 import json
+import _biosppy.biosppy as bsp
             
 def szInSession(annotations):
     
@@ -56,8 +57,9 @@ def main(seg_window, feat_types=['non_linear', 'dwt'], seg_overlap=0, fs=250):
             print('\t Loading file -- {}'.format(file))
             file_name = file[:-4]
             file_path = os.path.join(npy_data_dir, file)  
-            
-            recording = np.load(file_path)
+            unfiltered = np.load(file_path)
+            filt = bsp.signals.eeg.eeg(signal=np.reshape(unfiltered, (-1,1)), sampling_rate=250., show=False)
+            recording = filt['filtered'][:,0]
             list_file_name = file_name.split('_')
             patient = list_file_name[0]
             session = list_file_name[1]
@@ -215,5 +217,7 @@ def main(seg_window, feat_types=['non_linear', 'dwt'], seg_overlap=0, fs=250):
                         
 # %%                            
 if __name__ == '__main__':
-
-    main(seg_window=1)                        
+    
+    durations = [0.25, 0.5, 1., 2., 3., 5.]
+    for duration in durations:
+        main(seg_window=duration)                          

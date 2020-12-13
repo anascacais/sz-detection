@@ -96,10 +96,10 @@ def eeg(signal=None, sampling_rate=1000., labels=None, show=True):
 
     # low pass filter
     b, a = st.get_filter(ftype='butter',
-                         band='lowpass',
-                         order=16,
-                         frequency=48,
-                         sampling_rate=sampling_rate)
+                          band='lowpass',
+                          order=16,
+                          frequency=48,
+                          sampling_rate=sampling_rate)
 
     filtered, _ = st._filter_signal(b, a, signal=aux, check_phase=True, axis=0)
 

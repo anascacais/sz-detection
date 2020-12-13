@@ -1,18 +1,26 @@
-import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import signal
 import numpy as np
 import _biosppy.biosppy as bsp
 import _biosppy.biosppy.signals.tools as st
 
-data = np.load('D:\\TUH\\data_npy\\0103\\00000254_s005_t000.npy')
+data = np.load('D:\\TUH\\data_npy\\0103\\00000006_s004_t000.npy')
 
 res = bsp.signals.eeg.eeg(signal=np.reshape(data, (-1,1)), sampling_rate=250., show=False)
 
+freqs, psd = signal.periodogram(data, fs=250)
+plt.figure(figsize=(5, 4))
+plt.plot(freqs[:int(np.argwhere(freqs==65))], psd[:int(np.argwhere(freqs==65))])
+plt.title('PSD: Original Signal')
+plt.xlabel('Frequency')
+plt.ylabel('Power')
+plt.tight_layout()
+
+
 freqs, psd = signal.periodogram(res['filtered'][:,0], fs=250)
 plt.figure(figsize=(5, 4))
-plt.plot(freqs, psd)
-plt.title('PSD: Background')
+plt.plot(freqs[:int(np.argwhere(freqs==65))], psd[:int(np.argwhere(freqs==65))])
+plt.title('PSD: Filtered Signal')
 plt.xlabel('Frequency')
 plt.ylabel('Power')
 plt.tight_layout()

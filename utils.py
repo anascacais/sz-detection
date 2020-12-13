@@ -3,7 +3,7 @@ import numpy as np
 from collections import Counter
 from scipy import stats
 import pywt
-from entropy import app_entropy, sample_entropy, higuchi_fd
+from entropy import sample_entropy, higuchi_fd
 
 
 def hurst_exponent(list_values):
@@ -192,7 +192,7 @@ def get_features(signal=None,
     
     features = np.array([])
     
-    window = seg_window*sampling_rate
+    window = int(seg_window*sampling_rate)
     overlap = seg_overlap*sampling_rate
     
     isample = 0
