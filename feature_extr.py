@@ -40,10 +40,26 @@ def non_linear_features(x):
 
 
 def signal_stats(list_values):
-    mean = np.nanmean(list_values)
-    std = np.nanstd(list_values)
-    kurt = stats.kurtosis(list_values)
-    skew = stats.skew(list_values)
+    try:
+        mean = np.nanmean(list_values)
+    except Exception as e:
+        print(e)
+        mean = np.nan
+    try:
+        std = np.nanstd(list_values)
+    except Exception as e:
+        print(e)
+        std = np.nan
+    try:
+        kurt = stats.kurtosis(list_values)
+    except Exception as e:
+        print(e)
+        kurt = np.nan
+    try:
+        skew = stats.skew(list_values)
+    except Exception as e:
+        print(e)
+        skew = np.nan
 
     return [mean, std, skew, kurt]
 
@@ -61,53 +77,62 @@ def dwt(signal):
     # plt.figure()
     # plt.title('original')
     # plt.plot(signal)
-    
-    energies = np.array([])
-    for i in np.arange(2, dec_lvl+1):
         
-        D = pywt.downcoef('d', signal, w, level=i)
-        x = pywt.upcoef('d', D, w, level=i)
-        energies = np.append(energies, np.dot(x.T, x)) # energy of sub-band
-        
-        # plt.figure()
-        # plt.title('reconstruction - coeff D{}'.format(i))
-        # plt.plot(x)
-        
-        if i == dec_lvl:
-            A = pywt.downcoef('a', signal, w, level=i)
-            x = pywt.upcoef('a', A, w, level=i)
-            energies = np.append(energies, np.dot(x.T, x))
+    try:
+        energies = np.array([])
+        for i in np.arange(2, dec_lvl+1):
+            
+            D = pywt.downcoef('d', signal, w, level=i)
+            x = pywt.upcoef('d', D, w, level=i)
+            energies = np.append(energies, np.dot(x.T, x)) # energy of sub-band
             
             # plt.figure()
-            # plt.title('reconstruction - coeff A{}'.format(i))
+            # plt.title('reconstruction - coeff D{}'.format(i))
             # plt.plot(x)
-
+            
+            if i == dec_lvl:
+                A = pywt.downcoef('a', signal, w, level=i)
+                x = pywt.upcoef('a', A, w, level=i)
+                energies = np.append(energies, np.dot(x.T, x))
+                
+                # plt.figure()
+                # plt.title('reconstruction - coeff A{}'.format(i))
+                # plt.plot(x)
     
-    #sub-band extraction f = [0, 3.91], [3.91, 7.812], [7.812, 15.625], [15.625, 31.25], [31.25, 62.5], [62.5, 125] Hz
-    coeffs = pywt.wavedec(signal, 'db4', level=dec_lvl) #[cA5, cD5, cD4, cD3, cD2, cD1], n=dec_lvl
-    
-    
-    means = np.array([])
-    stds = np.array([])
-    kurts = np.array([])
-    skews = np.array([])
-    
-    for i in np.arange(len(coeffs)-1):
         
-        ss = signal_stats(coeffs[i]) 
-        means = np.append(means, ss[0])
-        stds = np.append(stds, ss[1])
-        kurts = np.append(kurts, ss[2])
-        skews = np.append(skews, ss[3])
+        #sub-band extraction f = [0, 3.91], [3.91, 7.812], [7.812, 15.625], [15.625, 31.25], [31.25, 62.5], [62.5, 125] Hz
+        coeffs = pywt.wavedec(signal, 'db4', level=dec_lvl) #[cA5, cD5, cD4, cD3, cD2, cD1], n=dec_lvl
         
-    
-    tot_energy = np.sum(energies)
-    rwenergy = list(energies / tot_energy) # relative wavelet energy
-    dwt = rwenergy
-    dwt = np.append(dwt, means)
-    dwt = np.append(dwt, stds)
-    dwt = np.append(dwt, kurts)
-    dwt = np.append(dwt, skews)
+        
+        means = np.array([])
+        stds = np.array([])
+        kurts = np.array([])
+        skews = np.array([])
+        
+        for i in np.arange(len(coeffs)-1):
+            
+            ss = signal_stats(coeffs[i]) 
+            means = np.append(means, ss[0])
+            stds = np.append(stds, ss[1])
+            kurts = np.append(kurts, ss[2])
+            skews = np.append(skews, ss[3])
+            
+        
+        tot_energy = np.sum(energies)
+        rwenergy = list(energies / tot_energy) # relative wavelet energy
+        dwt = rwenergy
+        dwt = np.append(dwt, means)
+        dwt = np.append(dwt, stds)
+        dwt = np.append(dwt, kurts)
+        dwt = np.append(dwt, skews)
+    except Exception as e:
+        print(e)
+        if max_lvl == 3:
+            dwt = np.empty((15,))*np.nan
+        elif max_lvl == 4:
+            dwt = np.empty((20,))*np.nan
+        else:
+            dwt = np.empty((25,))*np.nan
     
     return dwt
 
