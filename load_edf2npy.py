@@ -44,27 +44,36 @@ def load_edf_data(groups_dir, groups_dir_res, save_dir):
             load_patient_data(patient, patient_dir, patient_dir_res, save_dir=save_dir)
 
             
-def check_files(check_dir):
+def check_files():
+    
+    drives = ['%s:' % d for d in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' if os.path.exists('%s:' % d)]
+    drive = [d for d in drives if subprocess.check_output(["cmd","/c vol "+d]).decode().split("\r\n")[0].split(" ").pop()=='Passport'][0]
+    
+    montages = ['0103', '02']
+    
+    for montage in montages:
+            
+        check_dir = '{}\\TUH\\data_npy\\{}'.format(drive, montage)
 
-    #check_dir = 'E:\\TUH\\v1.5.1\\ref_data_csv\\eval\\01_tcp_ar'
-
-    list_check_dir = os.listdir(check_dir)
-    list_annotations = [lcd for lcd in list_check_dir if 'tse_annotations' in lcd]
-    list_csv = [lcd for lcd in list_check_dir if lcd.endswith('.csv')]
-    sorted(list_annotations)
-    for la in list_annotations:
-        annotation = json.load(open(check_dir + os.sep + la, 'rb'))
-        csv_files = list(annotation.keys())
-        for csv in csv_files:
-            if csv+'.csv' in list_csv:
-                list_csv.remove(csv+'.csv')
-            else:
-                print('file not here')
-
-    return(list_csv)
+        list_check_dir = os.listdir(check_dir)
+        list_annotations = [lcd for lcd in list_check_dir if 'annotations' in lcd]
+        list_npy = [lcd for lcd in list_check_dir if lcd.endswith('.npy')]
+        sorted(list_annotations)
+        for la in list_annotations:
+            annotation = json.load(open(check_dir + os.sep + la, 'rb'))
+            npy_files = list(annotation.keys())
+            for npy in npy_files:
+                if npy + '.npy' in list_npy:
+                    list_npy.remove(npy + '.npy')
+                else:
+                    print('file not here')
+    
+        print(list_npy)
 
 
 # %% 
 if __name__ == '__main__':
 
     main()
+    
+    check_files()
