@@ -1,4 +1,4 @@
-from utils import get_features
+from feature_extr import get_features
 import subprocess
 import numpy as np
 import os
