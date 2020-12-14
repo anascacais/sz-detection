@@ -98,8 +98,22 @@ def dwt(signal):
                 # plt.figure()
                 # plt.title('reconstruction - coeff A{}'.format(i))
                 # plt.plot(x)
-    
         
+        tot_energy = np.sum(energies)
+        rwenergy = list(energies / tot_energy) # relative wavelet energy
+        dwt = rwenergy
+        
+    except Exception as e:
+        print(e)
+        if max_lvl == 3:
+            rwenergy = np.empty((3,))*np.nan
+        elif max_lvl == 4:
+            rwenergy = np.empty((4,))*np.nan
+        else:
+            rwenergy = np.empty((5,))*np.nan
+        dwt = rwenergy
+    
+    try:
         #sub-band extraction f = [0, 3.91], [3.91, 7.812], [7.812, 15.625], [15.625, 31.25], [31.25, 62.5], [62.5, 125] Hz
         coeffs = pywt.wavedec(signal, 'db4', level=dec_lvl) #[cA5, cD5, cD4, cD3, cD2, cD1], n=dec_lvl
         
@@ -117,22 +131,19 @@ def dwt(signal):
             kurts = np.append(kurts, ss[2])
             skews = np.append(skews, ss[3])
             
-        
-        tot_energy = np.sum(energies)
-        rwenergy = list(energies / tot_energy) # relative wavelet energy
-        dwt = rwenergy
         dwt = np.append(dwt, means)
         dwt = np.append(dwt, stds)
         dwt = np.append(dwt, kurts)
         dwt = np.append(dwt, skews)
+        
     except Exception as e:
         print(e)
         if max_lvl == 3:
-            dwt = np.empty((15,))*np.nan
+            dwt = np.append(dwt, np.empty((12,))*np.nan)
         elif max_lvl == 4:
-            dwt = np.empty((20,))*np.nan
+            dwt = np.append(dwt, np.empty((16,))*np.nan)
         else:
-            dwt = np.empty((25,))*np.nan
+            dwt = np.append(dwt, np.empty((20,))*np.nan)
     
     return dwt
 
