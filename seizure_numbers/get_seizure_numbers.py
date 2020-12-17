@@ -12,6 +12,7 @@ def get_annotations(file_path):
                             
     return [annot.split(' ') for annot in annotations] # transforms list of strings into list of lists 
 
+
 def get_seizure_numbers(drive, montages, dataset):
     
     for montage in montages:

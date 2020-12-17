@@ -51,9 +51,10 @@ def main(seg_window, feat_types=['non_linear', 'dwt'], seg_overlap=0, fs=250):
                   'musc': 24, 'elpp': 25, 'elst': 26, 'calb': 27}         
         
             
-        for file in list_files: 
+        for i,file in enumerate(list_files): 
             
-            print('\t Loading file -- {}'.format(file))
+            print('\t Loading file -- {}: {}/{}'.format(file, i+1, len(list_files)))
+            
             file_name = file[:-4]
             file_path = os.path.join(npy_data_dir, file)  
             unfiltered = np.load(file_path)

@@ -64,49 +64,51 @@ def load_patient_data(patient, patient_dir, patient_dir_res, save_dir):
                 print('\t \t .npy file already exists!')
                 hasAnnot = False
                 
-            #### Annotations
+            #### Annotations ####
             if file_name not in annotations:
                 # Make annotations files (try for multi-class first)
-                if not hasAnnot:
-                    try:
-                        edf = pyedf.EdfReader(file_path)
-                    except:
-                        print('\t \t This file could not be open')
-                        continue
+                # if not hasAnnot:
+                #     try:
+                #         edf = pyedf.EdfReader(file_path)
+                #     except:
+                #         print('\t \t This file could not be open')
+                #         continue
                     
-                    file_start_time = edf.getStartdatetime()
-                    file_duration = datetime.timedelta(seconds=edf.getFileDuration())
-                    edf.close()
+                #     file_start_time = edf.getStartdatetime()
+                #     file_duration = datetime.timedelta(seconds=edf.getFileDuration())
+                #     edf.close()
                 
                 try:
-                    with open (os.path.join(session_dir, file_name+'.tse'), 'rt') as file:    
+                    with open(os.path.join(session_dir, file_name+'.tse'), 'rt') as file:    
                         og_annot = file.read()
                         og_annot = og_annot.split('\n')
                         og_annot = list(filter(None, og_annot))
                 except:
-                    with open (os.path.join(session_dir, file_name+'.tse_bi'), 'rt') as file:
+                    with open(os.path.join(session_dir, file_name+'.tse_bi'), 'rt') as file:
                         og_annot = file.read()
                         og_annot = og_annot.split('\n')
                         og_annot = list(filter(None, og_annot))
                 
 
-                if len(annotations) == 0: #first file in session
-                    start = 0.
-                else:
-                    prev_file = sorted(annotations.keys())[-1]
-                    prev_file_end = annotations[prev_file]['file_end']
-                    distance = file_start_time - datetime.datetime.strptime(prev_file_end, '%Y/%m/%d, %H:%M:%S')
-                    del annotations[prev_file]['file_end']
-                    start = max(list(annotations[prev_file].values()))[-1] + distance.total_seconds()
+                # if len(annotations) == 0: #first file in session
+                #     start = 0.
+                # else:
+                #     prev_file = sorted(annotations.keys())[-1]
+                #     prev_file_end = annotations[prev_file]['file_end']
+                #     distance = file_start_time - datetime.datetime.strptime(prev_file_end, '%Y/%m/%d, %H:%M:%S')
+                #     del annotations[prev_file]['file_end']
+                #     start = max(list(annotations[prev_file].values()))[-1] + distance.total_seconds()
                 
                 annotations[file_name] = {}
-                file_end = file_start_time + file_duration
-                annotations[file_name]['file_end'] = file_end.strftime("%Y/%m/%d, %H:%M:%S")
+                # file_end = file_start_time + file_duration
+                # annotations[file_name]['file_end'] = file_end.strftime("%Y/%m/%d, %H:%M:%S")
                 
                 for i in range(1, len(og_annot)):
                     event_annot = og_annot[i].split(' ')
-                    event_start = start + float(event_annot[0])
-                    event_end = start + float(event_annot[1])
+                    # event_start = start + float(event_annot[0])
+                    # event_end = start + float(event_annot[1])
+                    event_start = float(event_annot[0])
+                    event_end = float(event_annot[1])
                     
                     try:
                         annot_old = annotations[file_name][event_annot[2]]
@@ -116,7 +118,7 @@ def load_patient_data(patient, patient_dir, patient_dir_res, save_dir):
                     annot_old.extend([event_start, event_end])
                     annotations[file_name][event_annot[2]] = annot_old
 
-                hasAnnot = False
+                #hasAnnot = False
                 
         # Save annotations in json file  
         with open(os.path.join(save_dir, patient+'_'+session)+'_annotations.txt', 'w') as file:

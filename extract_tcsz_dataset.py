@@ -5,7 +5,9 @@ import numpy as np
 import os
 import json
 import _biosppy.biosppy as bsp
-            
+import pickle
+
+
 def szInSession(annotations):
     
     sz_starts = []
@@ -42,7 +44,9 @@ def main(seg_window, feat_types=['non_linear', 'dwt'], seg_overlap=0, fs=250):
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
-        list_files = sorted([f for f in os.listdir(npy_data_dir) if f.endswith('.npy')])
+        #list_files = sorted([f for f in os.listdir(npy_data_dir) if f.endswith('.npy')])
+        with open ('tcsz_files', 'rb') as fp:
+            list_files = pickle.load(fp) 
         
         # create dict with possible labels
         labels = {'(null)': 0, 'spsw': 1, 'gped': 2, 'pled': 3, 'eybl': 4, 'artf': 5, 
@@ -52,9 +56,10 @@ def main(seg_window, feat_types=['non_linear', 'dwt'], seg_overlap=0, fs=250):
                   'musc': 24, 'elpp': 25, 'elst': 26, 'calb': 27}         
         
             
-        for file in list_files: 
+        for i,file in enumerate(list_files): 
             
-            print('\t Loading file -- {}'.format(file))
+            print('\t Loading file -- {}: {}/{}'.format(file, i+1, len(list_files)))
+    
             file_name = file[:-4]
             file_path = os.path.join(npy_data_dir, file)  
             unfiltered = np.load(file_path)
