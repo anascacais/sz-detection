@@ -48,8 +48,7 @@ def main(seg_window, feat_types=['non_linear', 'dwt'], seg_overlap=0, fs=250):
                   'bckg': 6, 'seiz': 7, 'fnsz': 8, 'gnsz': 9, 'spsz': 10, 'cpsz': 11, 
                   'absz': 12, 'tnsz': 13, 'cnsz': 14, 'tcsz': 15, 'atsz': 16, 'mysz': 17, 
                   'nesz': 18, 'intr': 19, 'slow': 20, 'eyem': 21, 'chew': 22, 'shiv': 23, 
-                  'musc': 24, 'elpp': 25, 'elst': 26, 'calb': 27} 
-        
+                  'musc': 24, 'elpp': 25, 'elst': 26, 'calb': 27}         
         
             
         for file in list_files: 
@@ -108,86 +107,86 @@ def main(seg_window, feat_types=['non_linear', 'dwt'], seg_overlap=0, fs=250):
                     
 
                         # Add timeAFTsz and time2sz if applicable
-                        if annot_type == 'bckg':
-                            bg = annotations['bckg'][0:2]
-                            bg_time = bg[1]-bg[0]
-                            nsamples = int(bg_time/(seg_window-seg_overlap))
+                        # if annot_type == 'bckg':
+                        #     bg = annotations['bckg'][0:2]
+                        #     bg_time = bg[1]-bg[0]
+                        #     nsamples = int(bg_time/(seg_window-seg_overlap))
                             
-                            if len(sz_starts) == 0:
-                                new_col = np.empty((feature_vector.shape[0], 2))
-                                new_col[:] = np.nan
-                                feature_vector = np.hstack((new_col, feature_vector))
+                        #     if len(sz_starts) == 0:
+                        #         new_col = np.empty((feature_vector.shape[0], 2))
+                        #         new_col[:] = np.nan
+                        #         feature_vector = np.hstack((new_col, feature_vector))
                                 
-                            else:
-                                if sorted(sz_starts + [bg[0]]).index(bg[0]) == 0: #there's only a sz after
+                        #     else:
+                        #         if sorted(sz_starts + [bg[0]]).index(bg[0]) == 0: #there's only a sz after
                                     
-                                    # timeAFTsz column
-                                    new_col = np.empty((feature_vector.shape[0], 1))
-                                    new_col[:] = np.nan
-                                    feature_vector = np.hstack((new_col, feature_vector))
+                        #             # timeAFTsz column
+                        #             new_col = np.empty((feature_vector.shape[0], 1))
+                        #             new_col[:] = np.nan
+                        #             feature_vector = np.hstack((new_col, feature_vector))
                                     
-                                    # time2sz column
-                                    time2sz = sz_starts[0] - bg[0] - seg_window
-                                    new_col = np.empty((feature_vector.shape[0], 1))
-                                    new_col[:] = np.nan
+                        #             # time2sz column
+                        #             time2sz = sz_starts[0] - bg[0] - seg_window
+                        #             new_col = np.empty((feature_vector.shape[0], 1))
+                        #             new_col[:] = np.nan
                                 
-                                    for k in range(nsamples):
-                                        # Add time2sz to first sample
-                                        new_col[k] = time2sz
-                                        # Set time for next segment
-                                        time2sz = time2sz - (seg_window - seg_overlap)
-                                    feature_vector = np.hstack((new_col, feature_vector))
+                        #             for k in range(nsamples):
+                        #                 # Add time2sz to first sample
+                        #                 new_col[k] = time2sz
+                        #                 # Set time for next segment
+                        #                 time2sz = time2sz - (seg_window - seg_overlap)
+                        #             feature_vector = np.hstack((new_col, feature_vector))
                                     
-                                elif sorted(sz_starts + [bg[0]]).index(bg[0]) == len(sz_starts): #there's only a sz before
+                        #         elif sorted(sz_starts + [bg[0]]).index(bg[0]) == len(sz_starts): #there's only a sz before
                                     
-                                    # timeAFTsz column
-                                    timeAFTsz = bg[0] - sz_ends[0] + seg_window
-                                    new_col = np.empty((feature_vector.shape[0], 1))
-                                    new_col[:] = np.nan
+                        #             # timeAFTsz column
+                        #             timeAFTsz = bg[0] - sz_ends[0] + seg_window
+                        #             new_col = np.empty((feature_vector.shape[0], 1))
+                        #             new_col[:] = np.nan
                                     
-                                    for k in range(nsamples):
-                                        new_col[k] = timeAFTsz
-                                        timeAFTsz = timeAFTsz + (seg_window - seg_overlap)
-                                    feature_vector = np.hstack((new_col, feature_vector))
+                        #             for k in range(nsamples):
+                        #                 new_col[k] = timeAFTsz
+                        #                 timeAFTsz = timeAFTsz + (seg_window - seg_overlap)
+                        #             feature_vector = np.hstack((new_col, feature_vector))
                                     
-                                    # time2sz column
-                                    new_col = np.empty((feature_vector.shape[0], 1))
-                                    new_col[:] = np.nan
-                                    feature_vector = np.hstack((new_col, feature_vector))
+                        #             # time2sz column
+                        #             new_col = np.empty((feature_vector.shape[0], 1))
+                        #             new_col[:] = np.nan
+                        #             feature_vector = np.hstack((new_col, feature_vector))
                                     
-                                else: #there's a sz before and after
+                        #         else: #there's a sz before and after
                                     
-                                    # timeAFTsz column
-                                    ind = sorted(sz_ends + [bg[1]]).index(bg[1])
-                                    timeAFTsz = bg[0] - sz_ends[ind-1] + seg_window
-                                    new_col = np.empty((feature_vector.shape[0], 1))
-                                    new_col[:] = np.nan
+                        #             # timeAFTsz column
+                        #             ind = sorted(sz_ends + [bg[1]]).index(bg[1])
+                        #             timeAFTsz = bg[0] - sz_ends[ind-1] + seg_window
+                        #             new_col = np.empty((feature_vector.shape[0], 1))
+                        #             new_col[:] = np.nan
                                 
-                                    for k in range(nsamples):
-                                        new_col[k] = timeAFTsz
-                                        timeAFTsz = timeAFTsz + (seg_window - seg_overlap)
-                                    feature_vector = np.hstack((new_col, feature_vector))
+                        #             for k in range(nsamples):
+                        #                 new_col[k] = timeAFTsz
+                        #                 timeAFTsz = timeAFTsz + (seg_window - seg_overlap)
+                        #             feature_vector = np.hstack((new_col, feature_vector))
                                     
-                                    # time2sz column
-                                    ind = sorted(sz_starts + [bg[0]]).index(bg[0])
-                                    time2sz = sz_starts[ind+1] - bg[0] - seg_window
-                                    new_col = np.empty((feature_vector.shape[0], 1))
-                                    new_col[:] = np.nan
+                        #             # time2sz column
+                        #             ind = sorted(sz_starts + [bg[0]]).index(bg[0])
+                        #             time2sz = sz_starts[ind+1] - bg[0] - seg_window
+                        #             new_col = np.empty((feature_vector.shape[0], 1))
+                        #             new_col[:] = np.nan
                                 
-                                    for k in range(nsamples):
-                                        new_col[k] = time2sz
-                                        time2sz = time2sz - (seg_window - seg_overlap)
-                                    feature_vector = np.hstack((new_col, feature_vector))
+                        #             for k in range(nsamples):
+                        #                 new_col[k] = time2sz
+                        #                 time2sz = time2sz - (seg_window - seg_overlap)
+                        #             feature_vector = np.hstack((new_col, feature_vector))
                                     
-                        else:
-                            sz = annotations[annot_type][0:2]
-                            sz_time = sz[1]-sz[0]
-                            nsamples = int(sz_time/(seg_window-seg_overlap))
+                        # else:
+                        #     sz = annotations[annot_type][0:2]
+                        #     sz_time = sz[1]-sz[0]
+                        #     nsamples = int(sz_time/(seg_window-seg_overlap))
         
                             
-                            new_col = np.empty((feature_vector.shape[0], 2))
-                            new_col[:] = np.nan
-                            feature_vector = np.hstack((new_col, feature_vector))
+                        #     new_col = np.empty((feature_vector.shape[0], 2))
+                        #     new_col[:] = np.nan
+                        #     feature_vector = np.hstack((new_col, feature_vector))
                     
                     else:
                         print('\t \t \t Segment length is not enough = {} samples'.format(len(segment)))
@@ -218,6 +217,7 @@ def main(seg_window, feat_types=['non_linear', 'dwt'], seg_overlap=0, fs=250):
 # %%                            
 if __name__ == '__main__':
     
-    durations = [0.25, 0.5, 1., 2., 3., 5.]
-    for duration in durations:
-        main(seg_window=duration)                          
+    # durations = [0.25, 0.5, 1., 2., 3., 5.]
+    # for duration in durations:
+    #     main(seg_window=duration)            
+    main(seg_window=5.)                
