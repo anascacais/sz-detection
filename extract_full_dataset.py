@@ -31,7 +31,7 @@ def main(seg_window, feat_types=['non_linear', 'dwt'], seg_overlap=0, fs=250):
     drives = ['%s:' % d for d in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' if os.path.exists('%s:' % d)]
     drive = [d for d in drives if subprocess.check_output(["cmd","/c vol "+d]).decode().split("\r\n")[0].split(" ").pop()=='Passport'][0]
         
-    montages = ['0103', '02']
+    montages = ['02']
     
     for montage in montages:
         
@@ -221,4 +221,4 @@ if __name__ == '__main__':
     # durations = [0.25, 0.5, 1., 2., 3., 5.]
     # for duration in durations:
     #     main(seg_window=duration)            
-    main(seg_window=5.)                
+    main(seg_window=1.)                

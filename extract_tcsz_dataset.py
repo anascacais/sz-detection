@@ -61,167 +61,170 @@ def main(seg_window, feat_types=['non_linear', 'dwt'], seg_overlap=0, fs=250):
             print('\t Loading file -- {}: {}/{}'.format(file, i+1, len(list_files)))
     
             file_name = file[:-4]
-            file_path = os.path.join(npy_data_dir, file)  
-            unfiltered = np.load(file_path)
-            filt = bsp.signals.eeg.eeg(signal=np.reshape(unfiltered, (-1,1)), sampling_rate=250., show=False)
-            recording = filt['filtered'][:,0]
-            list_file_name = file_name.split('_')
-            patient = list_file_name[0]
-            session = list_file_name[1]
-            int_file_name = int(list_file_name[0][3:] + list_file_name[1][1:] + list_file_name[2][1:])
-            
+            file_path = os.path.join(npy_data_dir, file)
             try:
-                features = np.load(os.path.join(save_dir, 'window_'+''.join(str(seg_window).split('.'))+'.npy'))
-            except:
-                features = np.array([])
+                unfiltered = np.load(file_path)
+                filt = bsp.signals.eeg.eeg(signal=np.reshape(unfiltered, (-1,1)), sampling_rate=250., show=False)
+                recording = filt['filtered'][:,0]
+                list_file_name = file_name.split('_')
+                patient = list_file_name[0]
+                session = list_file_name[1]
+                int_file_name = int(list_file_name[0][3:] + list_file_name[1][1:] + list_file_name[2][1:])
                 
-            if len(features) > 0 and int_file_name in features[:, 0]:
-                print('\t \t This file is name already in features!')
-                continue
-        
-            with open(os.path.join(npy_data_dir, patient+'_'+session)+'_annotations.txt', 'r') as annot_file:
-                annotations = json.load(annot_file)
-            
-            list_sessions = [list(annotations[ses].keys()) for ses in annotations.keys()]
-            if 'tcsz' not in [event for ses in list_sessions for event in ses]:
-                print('---- no tcsz in session ----')
-            else:
-                sz_starts, sz_ends = szInSession(annotations)
-            
                 try:
-                    annotations = annotations[file_name]
+                    features = np.load(os.path.join(save_dir, 'window_'+''.join(str(seg_window).split('.'))+'.npy'))
                 except:
-                    print('\t \t No annotations for ' + file_name)
-                    annotations = {}
+                    features = np.array([])
                     
-                if annotations != {}:
-                    
-                    if 'file_end' in annotations:
-                        del annotations['file_end']
-                    
-                    nb_intervals = int(sum([len(annotations[a])/2 for a in annotations]))
-                    for n in range(nb_intervals):
+                if len(features) > 0 and int_file_name in features[:, 0]:
+                    print('\t \t This file is name already in features!')
+                    continue
             
-                        annot_type = min(annotations.keys(), key=(lambda k: annotations[k]))
+                with open(os.path.join(npy_data_dir, patient+'_'+session)+'_annotations.txt', 'r') as annot_file:
+                    annotations = json.load(annot_file)
+                
+                list_sessions = [list(annotations[ses].keys()) for ses in annotations.keys()]
+                if 'tcsz' not in [event for ses in list_sessions for event in ses]:
+                    print('---- no tcsz in session ----')
+                else:
+                    sz_starts, sz_ends = szInSession(annotations)
+                
+                    try:
+                        annotations = annotations[file_name]
+                    except:
+                        print('\t \t No annotations for ' + file_name)
+                        annotations = {}
                         
-                        print('\t \t \t extracting features for annotation ' + annot_type + '...' )
-                        print('\t \t \t from sample ' + str(int(annotations[annot_type][0]*fs)) + ' to ' + str(int(annotations[annot_type][1]*fs)))
+                    if annotations != {}:
                         
-                        segment = recording[int(annotations[annot_type][0]*fs):int(annotations[annot_type][1]*fs)]
+                        if 'file_end' in annotations:
+                            del annotations['file_end']
                         
-                        if len(segment) >= fs*seg_window:
-                            feature_vector = get_features(signal=segment, feat_types=feat_types,
-                                                          sampling_rate=fs, seg_window=seg_window,
-                                                          seg_overlap=seg_overlap)
-                        
-    
-                            # Add timeAFTsz and time2sz if applicable
-                            # if annot_type == 'bckg':
-                            #     bg = annotations['bckg'][0:2]
-                            #     bg_time = bg[1]-bg[0]
-                            #     nsamples = int(bg_time/(seg_window-seg_overlap))
-                                
-                            #     if len(sz_starts) == 0:
-                            #         new_col = np.empty((feature_vector.shape[0], 2))
-                            #         new_col[:] = np.nan
-                            #         feature_vector = np.hstack((new_col, feature_vector))
-                                    
-                            #     else:
-                            #         if sorted(sz_starts + [bg[0]]).index(bg[0]) == 0: #there's only a sz after
-                                        
-                            #             # timeAFTsz column
-                            #             new_col = np.empty((feature_vector.shape[0], 1))
-                            #             new_col[:] = np.nan
-                            #             feature_vector = np.hstack((new_col, feature_vector))
-                                        
-                            #             # time2sz column
-                            #             time2sz = sz_starts[0] - bg[0] - seg_window
-                            #             new_col = np.empty((feature_vector.shape[0], 1))
-                            #             new_col[:] = np.nan
-                                    
-                            #             for k in range(nsamples):
-                            #                 # Add time2sz to first sample
-                            #                 new_col[k] = time2sz
-                            #                 # Set time for next segment
-                            #                 time2sz = time2sz - (seg_window - seg_overlap)
-                            #             feature_vector = np.hstack((new_col, feature_vector))
-                                        
-                            #         elif sorted(sz_starts + [bg[0]]).index(bg[0]) == len(sz_starts): #there's only a sz before
-                                        
-                            #             # timeAFTsz column
-                            #             timeAFTsz = bg[0] - sz_ends[0] + seg_window
-                            #             new_col = np.empty((feature_vector.shape[0], 1))
-                            #             new_col[:] = np.nan
-                                        
-                            #             for k in range(nsamples):
-                            #                 new_col[k] = timeAFTsz
-                            #                 timeAFTsz = timeAFTsz + (seg_window - seg_overlap)
-                            #             feature_vector = np.hstack((new_col, feature_vector))
-                                        
-                            #             # time2sz column
-                            #             new_col = np.empty((feature_vector.shape[0], 1))
-                            #             new_col[:] = np.nan
-                            #             feature_vector = np.hstack((new_col, feature_vector))
-                                        
-                            #         else: #there's a sz before and after
-                                        
-                            #             # timeAFTsz column
-                            #             ind = sorted(sz_ends + [bg[1]]).index(bg[1])
-                            #             timeAFTsz = bg[0] - sz_ends[ind-1] + seg_window
-                            #             new_col = np.empty((feature_vector.shape[0], 1))
-                            #             new_col[:] = np.nan
-                                    
-                            #             for k in range(nsamples):
-                            #                 new_col[k] = timeAFTsz
-                            #                 timeAFTsz = timeAFTsz + (seg_window - seg_overlap)
-                            #             feature_vector = np.hstack((new_col, feature_vector))
-                                        
-                            #             # time2sz column
-                            #             ind = sorted(sz_starts + [bg[0]]).index(bg[0])
-                            #             time2sz = sz_starts[ind+1] - bg[0] - seg_window
-                            #             new_col = np.empty((feature_vector.shape[0], 1))
-                            #             new_col[:] = np.nan
-                                    
-                            #             for k in range(nsamples):
-                            #                 new_col[k] = time2sz
-                            #                 time2sz = time2sz - (seg_window - seg_overlap)
-                            #             feature_vector = np.hstack((new_col, feature_vector))
-                                        
-                            # else:
-                            #     sz = annotations[annot_type][0:2]
-                            #     sz_time = sz[1]-sz[0]
-                            #     nsamples = int(sz_time/(seg_window-seg_overlap))
-            
-                                
-                            #     new_col = np.empty((feature_vector.shape[0], 2))
-                            #     new_col[:] = np.nan
-                            #     feature_vector = np.hstack((new_col, feature_vector))
-                        
-                        else:
-                            print('\t \t \t Segment length is not enough = {} samples'.format(len(segment)))
-                            feature_vector = None        
-                                
-                                
-                        # remove interval from annotations
-                        annotations[annot_type] = annotations[annot_type][2:]
-                        if len(annotations[annot_type]) == 0:
-                            del annotations[annot_type]       
-                        
-                        # add feature vector of segment to features array
-                        if feature_vector is not None:
-                            # Add label as column
-                            feature_vector = np.vstack(
-                                (np.ones([1, feature_vector.shape[0]]) * labels[annot_type], feature_vector.T)).T
-                            # add file name as column
-                            feature_vector = np.vstack(
-                                (np.ones([1, feature_vector.shape[0]]) * int_file_name, feature_vector.T)).T
+                        nb_intervals = int(sum([len(annotations[a])/2 for a in annotations]))
+                        for n in range(nb_intervals):
+                
+                            annot_type = min(annotations.keys(), key=(lambda k: annotations[k]))
                             
-                            if features.size == 0:
-                                features = feature_vector
+                            print('\t \t \t extracting features for annotation ' + annot_type + '...' )
+                            print('\t \t \t from sample ' + str(int(annotations[annot_type][0]*fs)) + ' to ' + str(int(annotations[annot_type][1]*fs)))
+                            
+                            segment = recording[int(annotations[annot_type][0]*fs):int(annotations[annot_type][1]*fs)]
+                            
+                            if len(segment) >= fs*seg_window:
+                                feature_vector = get_features(signal=segment, feat_types=feat_types,
+                                                              sampling_rate=fs, seg_window=seg_window,
+                                                              seg_overlap=seg_overlap)
+                            
+        
+                                # Add timeAFTsz and time2sz if applicable
+                                # if annot_type == 'bckg':
+                                #     bg = annotations['bckg'][0:2]
+                                #     bg_time = bg[1]-bg[0]
+                                #     nsamples = int(bg_time/(seg_window-seg_overlap))
+                                    
+                                #     if len(sz_starts) == 0:
+                                #         new_col = np.empty((feature_vector.shape[0], 2))
+                                #         new_col[:] = np.nan
+                                #         feature_vector = np.hstack((new_col, feature_vector))
+                                        
+                                #     else:
+                                #         if sorted(sz_starts + [bg[0]]).index(bg[0]) == 0: #there's only a sz after
+                                            
+                                #             # timeAFTsz column
+                                #             new_col = np.empty((feature_vector.shape[0], 1))
+                                #             new_col[:] = np.nan
+                                #             feature_vector = np.hstack((new_col, feature_vector))
+                                            
+                                #             # time2sz column
+                                #             time2sz = sz_starts[0] - bg[0] - seg_window
+                                #             new_col = np.empty((feature_vector.shape[0], 1))
+                                #             new_col[:] = np.nan
+                                        
+                                #             for k in range(nsamples):
+                                #                 # Add time2sz to first sample
+                                #                 new_col[k] = time2sz
+                                #                 # Set time for next segment
+                                #                 time2sz = time2sz - (seg_window - seg_overlap)
+                                #             feature_vector = np.hstack((new_col, feature_vector))
+                                            
+                                #         elif sorted(sz_starts + [bg[0]]).index(bg[0]) == len(sz_starts): #there's only a sz before
+                                            
+                                #             # timeAFTsz column
+                                #             timeAFTsz = bg[0] - sz_ends[0] + seg_window
+                                #             new_col = np.empty((feature_vector.shape[0], 1))
+                                #             new_col[:] = np.nan
+                                            
+                                #             for k in range(nsamples):
+                                #                 new_col[k] = timeAFTsz
+                                #                 timeAFTsz = timeAFTsz + (seg_window - seg_overlap)
+                                #             feature_vector = np.hstack((new_col, feature_vector))
+                                            
+                                #             # time2sz column
+                                #             new_col = np.empty((feature_vector.shape[0], 1))
+                                #             new_col[:] = np.nan
+                                #             feature_vector = np.hstack((new_col, feature_vector))
+                                            
+                                #         else: #there's a sz before and after
+                                            
+                                #             # timeAFTsz column
+                                #             ind = sorted(sz_ends + [bg[1]]).index(bg[1])
+                                #             timeAFTsz = bg[0] - sz_ends[ind-1] + seg_window
+                                #             new_col = np.empty((feature_vector.shape[0], 1))
+                                #             new_col[:] = np.nan
+                                        
+                                #             for k in range(nsamples):
+                                #                 new_col[k] = timeAFTsz
+                                #                 timeAFTsz = timeAFTsz + (seg_window - seg_overlap)
+                                #             feature_vector = np.hstack((new_col, feature_vector))
+                                            
+                                #             # time2sz column
+                                #             ind = sorted(sz_starts + [bg[0]]).index(bg[0])
+                                #             time2sz = sz_starts[ind+1] - bg[0] - seg_window
+                                #             new_col = np.empty((feature_vector.shape[0], 1))
+                                #             new_col[:] = np.nan
+                                        
+                                #             for k in range(nsamples):
+                                #                 new_col[k] = time2sz
+                                #                 time2sz = time2sz - (seg_window - seg_overlap)
+                                #             feature_vector = np.hstack((new_col, feature_vector))
+                                            
+                                # else:
+                                #     sz = annotations[annot_type][0:2]
+                                #     sz_time = sz[1]-sz[0]
+                                #     nsamples = int(sz_time/(seg_window-seg_overlap))
+                
+                                    
+                                #     new_col = np.empty((feature_vector.shape[0], 2))
+                                #     new_col[:] = np.nan
+                                #     feature_vector = np.hstack((new_col, feature_vector))
+                            
                             else:
-                                features = np.concatenate((features, feature_vector), axis=0)
-                        
-                            np.save(os.path.join(save_dir, 'tcsz_window_'+''.join(str(seg_window).split('.'))), features)
+                                print('\t \t \t Segment length is not enough = {} samples'.format(len(segment)))
+                                feature_vector = None        
+                                    
+                                    
+                            # remove interval from annotations
+                            annotations[annot_type] = annotations[annot_type][2:]
+                            if len(annotations[annot_type]) == 0:
+                                del annotations[annot_type]       
+                            
+                            # add feature vector of segment to features array
+                            if feature_vector is not None:
+                                # Add label as column
+                                feature_vector = np.vstack(
+                                    (np.ones([1, feature_vector.shape[0]]) * labels[annot_type], feature_vector.T)).T
+                                # add file name as column
+                                feature_vector = np.vstack(
+                                    (np.ones([1, feature_vector.shape[0]]) * int_file_name, feature_vector.T)).T
+                                
+                                if features.size == 0:
+                                    features = feature_vector
+                                else:
+                                    features = np.concatenate((features, feature_vector), axis=0)
+                            
+                                np.save(os.path.join(save_dir, 'tcsz_window_'+''.join(str(seg_window).split('.'))), features)
+            except:
+                print('could not open file {}'.format(file))
                         
 # %%                            
 if __name__ == '__main__':

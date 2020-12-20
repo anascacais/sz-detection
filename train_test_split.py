@@ -9,6 +9,11 @@ def get_best_combo(counts, target, comb_n, sz_type):
     
     for n in comb_n:
         print('--- trying comb of {} sessions ---'.format(n))
+        
+        combinations = itertools.combinations(counts.keys(), n)
+        n_combo = sum(1 for _ in combinations)
+        print('{} combinations'.format(n_combo))
+        
         for session_comb in itertools.combinations(counts.keys(), n):
             try: 
                 nbckg0 = counts[session_comb[0]][6.0]
@@ -35,18 +40,21 @@ def get_best_combo(counts, target, comb_n, sz_type):
                 
         print('{}: {}'.format(best_combo, samples))
                 
-    print('{}: {}'.format(best_combo, samples))
+    print('{}: {} | target: {}'.format(best_combo, samples, target))
     return {'sessions': [str(st) for st in best_combo], 'target': target, 'nsamples': samples}
 
-#%% Get session combination that yields the closest number of test samples to the desired one (in both background and seizure samples) 
+#%% Clean data + Get session combination that yields the closest number of test samples to the desired one (in both background and seizure samples) 
 
 drives = ['%s:' % d for d in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' if os.path.exists('%s:' % d)]
 drive = [d for d in drives if subprocess.check_output(["cmd","/c vol "+d]).decode().split("\r\n")[0].split(" ").pop()=='Passport'][0] 
 
 montage = '0103'    
-feats_file = 'window_50'
+feats_file = 'window_10'
 
 data = np.load('{}\\TUH\\features\\{}\\{}.npy'.format(drive, montage, feats_file))
+
+data = data[~np.isnan(data).any(axis=1)]    
+data = data[~np.isinf(data).any(axis=1)] 
 
 labels = {8.: 'fnsz', 9.: 'gnsz', 10.: 'spsz', 11.: 'cpsz', 
           12.: 'absz', 13.: 'tnsz', 15.: 'tcsz', 17.: 'mysz'}
@@ -63,32 +71,36 @@ for sz_type in labels.keys():
         
         counts = {}
         
-        # files_list = np.unique(data[:,0])
-        # for file in files_list:
-        
         list_sessions = np.unique(np.array([f[:-3] for f in map(str, map(int, data[:,0]))]))
-        for session in list_sessions:
-            # index = np.reshape(np.argwhere(data[:,0] == file), (-1,))
+        for i,session in enumerate(list_sessions):
+            
+            print('session {} out of {}'.format(i, len(list_sessions)))
+            
             index = np.reshape(np.argwhere(np.array([f[:-3] for f in map(str, map(int, data[:,0]))]) == session), (-1,))
             samples = data[index, :] 
             
-            bg_index = np.reshape(np.argwhere(samples[:,1] == 6.), (-1,))
-            sz_index = np.reshape(np.argwhere(samples[:,1] == sz_type), (-1,))
-            samples = np.append(samples[bg_index,:], samples[sz_index,:], axis=0)
+            if sz_type in samples[:,1]:
             
-            unique_counts = np.unique(samples[:,1], return_counts=True)
+                bg_index = np.reshape(np.argwhere(samples[:,1] == 6.), (-1,))
+                sz_index = np.reshape(np.argwhere(samples[:,1] == sz_type), (-1,))
+                samples = np.append(samples[bg_index,:], samples[sz_index,:], axis=0)
+                
+                unique_counts = np.unique(samples[:,1], return_counts=True)
+                
+                try:
+                    if len(unique_counts[0]) == 1:
+                        counts[str(session)] = {unique_counts[0][0]: unique_counts[1][0]}
+                    else:
+                        counts[str(session)] = {unique_counts[0][0]: unique_counts[1][0], unique_counts[0][1]: unique_counts[1][1]}
+                except:
+                    print('---- session {} has no bckg or {} ----'.format(session, labels[sz_type]))
             
-            try:
-                if len(unique_counts[0]) == 1:
-                    counts[str(session)] = {unique_counts[0][0]: unique_counts[1][0]}
-                else:
-                    counts[str(session)] = {unique_counts[0][0]: unique_counts[1][0], unique_counts[0][1]: unique_counts[1][1]}
-            except:
-                print('---- session {} has no bckg or {} ----'.format(session, labels[sz_type]))
+            else:
+                print('---- session {} has no {} ----'.format(session, labels[sz_type]))
                 
         # get sessions combination that yields the closest number of test samples to the desired one (in both background and seizure samples) 
         best_combo[labels[sz_type]] = get_best_combo(counts, target, [1, 2], sz_type)
-                
+        
     except:
         print('---- seizure {} not in dataset ----'.format(labels[sz_type]))
                 
@@ -127,7 +139,9 @@ for sz_type in best_combo.keys():
             sz_type_index = list(labels.keys())[list(labels.values()).index(sz_type)]
             sz_index = np.reshape(np.argwhere(train_samples[:,1] == sz_type_index), (-1,))
             train = np.append(train, train_samples[sz_index, :], axis=0)
-            print(np.unique(train[:,1], return_counts=True))
+        
+        print(np.unique(train[:,1], return_counts=True))
+        print(np.unique(test[:,1], return_counts=True))
             
         np.save('{}\\TUH\\features\\0103\\{}_{}_test'.format(drive, feats_file, sz_type), test)
         np.save('{}\\TUH\\features\\0103\\{}_{}_train'.format(drive, feats_file, sz_type), train)
