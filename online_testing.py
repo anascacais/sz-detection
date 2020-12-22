@@ -57,42 +57,42 @@ labels = {8.: 'fnsz', 9.: 'gnsz', 10.: 'spsz', 11.: 'cpsz',
 datasets = []
 datasets_sz = []
 try:
-    datasets += [np.load('{}\\TUH\\features\\{}\\subsets\\{}_fnsz_test.npy'.format(drive, montage, feats_file))]
+    datasets += [np.load('{}\\TUH\\features\\{}\\feature_subsets\\{}_fnsz_test.npy'.format(drive, montage, feats_file))]
     datasets_sz += ['fnsz']
 except:
     print('fnsz file does not exist')
 try:
-    datasets += [np.load('{}\\TUH\\features\\{}\\subsets\\{}_gnsz_test.npy'.format(drive, montage, feats_file))]
+    datasets += [np.load('{}\\TUH\\features\\{}\\feature_subsets\\{}_gnsz_test.npy'.format(drive, montage, feats_file))]
     datasets_sz += ['gnsz']
 except:
     print('gnsz file does not exist')
 try:
-    datasets += [np.load('{}\\TUH\\features\\{}\\subsets\\{}_spsz_test.npy'.format(drive, montage, feats_file))]
+    datasets += [np.load('{}\\TUH\\features\\{}\\feature_subsets\\{}_spsz_test.npy'.format(drive, montage, feats_file))]
     datasets_sz += ['spsz']
 except:
     print('spsz file does not exist')
 try:
-    datasets += [np.load('{}\\TUH\\features\\{}\\subsets\\{}_cpsz_test.npy'.format(drive, montage, feats_file))]
+    datasets += [np.load('{}\\TUH\\features\\{}\\feature_subsets\\{}_cpsz_test.npy'.format(drive, montage, feats_file))]
     datasets_sz += ['cpsz']
 except:
     print('cpsz file does not exist')
 try:
-    datasets += [np.load('{}\\TUH\\features\\{}\\subsets\\{}_absz_test.npy'.format(drive, montage, feats_file))]
+    datasets += [np.load('{}\\TUH\\features\\{}\\feature_subsets\\{}_absz_test.npy'.format(drive, montage, feats_file))]
     datasets_sz += ['absz']
 except:
     print('absz file does not exist')
 try:
-    datasets += [np.load('{}\\TUH\\features\\{}\\subsets\\{}_tnsz_test.npy'.format(drive, montage, feats_file))]
+    datasets += [np.load('{}\\TUH\\features\\{}\\feature_subsets\\{}_tnsz_test.npy'.format(drive, montage, feats_file))]
     datasets_sz += ['tnsz']
 except:
     print('tnsz file does not exist')
 try:
-    datasets += [np.load('{}\\TUH\\features\\{}\\subsets\\{}_tcsz_test.npy'.format(drive, montage, feats_file))]
+    datasets += [np.load('{}\\TUH\\features\\{}\\feature_subsets\\{}_tcsz_test.npy'.format(drive, montage, feats_file))]
     datasets_sz += ['tcsz']
 except:
     print('tcsz file does not exist')
 try:
-    datasets += [np.load('{}\\TUH\\features\\{}\\subsets\\{}_mysz_test.npy'.format(drive, montage, feats_file))]
+    datasets += [np.load('{}\\TUH\\features\\{}\\feature_subsets\\{}_mysz_test.npy'.format(drive, montage, feats_file))]
     datasets_sz += ['mysz']
 except:
     print('mysz file does not exist')
