@@ -48,10 +48,10 @@ def get_seizure_numbers(drive, montages, dataset):
                             for annot in annotations:
                                 sz_duration = float(annot[1]) - float(annot[0])
                                 try: 
-                                    print('{}: {}'.format(annot[2],seizures[annot[2]]))
-                                    seizures[annot[2]] = [seizures[annot[2]][0]+1, seizures[annot[2]][1]+sz_duration]
+                                    print('{}: {}'.format(annot[2], seizures[annot[2]]))
+                                    seizures[annot[2]] = [seizures[annot[2]][0]+1, seizures[annot[2]][1]+[sz_duration]]
                                 except:
-                                    seizures[annot[2]] = [1, sz_duration]
+                                    seizures[annot[2]] = [1, [sz_duration]]
                                 
                         except Exception as e:
                             print(e)

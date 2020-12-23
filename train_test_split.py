@@ -149,6 +149,8 @@ def get_session_combo(drive, montage, feats_file, labels, from_count_files=False
                 best_combo[labels[sz_type]] = get_best_combo(counts[labels[sz_type]], target, [1, 2], sz_type, 'sessions')       
             except:
                 print('---- seizure {} not in dataset ----'.format(labels[sz_type]))
+            # if sz_type == 12. and montage == '02':
+            #     best_combo[labels[sz_type]]['sessions'] = ['2657001']
                 
     else:
         for sz_type in labels.keys(): 
@@ -160,10 +162,12 @@ def get_session_combo(drive, montage, feats_file, labels, from_count_files=False
             except:
                 print('---- seizure {} not in dataset ----'.format(labels[sz_type]))
             try:
-                best_combo[labels[sz_type]] =  get_best_combo_json(target, [1, 2], sz_type, montage, labels) 
+                best_combo[labels[sz_type]] = get_best_combo_json(target, [1, 2], sz_type, montage, labels) 
             except Exception as e:
                 print(e)
-                    
+            # if sz_type == 12. and montage == '02':
+            #     best_combo[labels[sz_type]]['sessions'] = ['2657001']
+            
     return data, best_combo
                 
 #%% Get file combination that yields the closest number of test samples to the desired one (if sessions didn't work)
@@ -252,7 +256,7 @@ def get_split_by_files(test_files, data, sz_type, labels):
     
     sz_type_index = list(labels.keys())[list(labels.values()).index(sz_type)]
     sz_index = np.reshape(np.argwhere(train_samples[:,1] == sz_type_index), (-1,))
-    train = np.append(train, train_samples[sz_index, :], axis=0)    
+    train = np.append(train, train_samples[sz_index, :], axis=0)
     
     return train, test
     
@@ -279,13 +283,18 @@ def train_test_split(data, best_combo, drive, montage, feats_file, labels):
                 best_file_combo = get_file_combo(data, list(labels.keys())[list(labels.values()).index(sz_type)])
                 ratio_files = best_file_combo['nsamples'][1] / best_file_combo['nsamples'][0]
                 
-                if ratio_files > ratio_sessions:
+                if ratio_files > ratio_sessions or (sz_type == 'mysz' and montage == '02') or (sz_type == 'absz' and montage == '02'):
                 
                     print('   files sz/bckg: {}'.format(ratio_files))
                     
                     if ratio_files < 2/3: print('   -- neither combo was good --')
                         
                     test_files = best_file_combo['files']
+                    if sz_type == 'mysz' and montage == '02':
+                        test_files += ['2004002.0']
+                    elif sz_type == 'absz' and montage == '02':
+                        test_files = ['675001001.0']
+                        
                     train, test = get_split_by_files(test_files, data, sz_type, labels)
                     
                 else:
