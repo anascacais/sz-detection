@@ -159,7 +159,7 @@ def offline_training(datasets, datasets_sz, montage, feats_file):
         
         grid.fit(X, y)
         model = grid.best_estimator_
-        pickle.dump(model, open('classifiers\\svm_{}_{}_{}'.format(montage, datasets_sz[i], feats_file.split('_')[1]), 'wb'))
+        pickle.dump(model, open('classifiers\\svm_{}_{}_{}_2'.format(montage, datasets_sz[i], feats_file.split('_')[1]), 'wb'))
         
         
         best_params = {}
@@ -173,7 +173,7 @@ def offline_training(datasets, datasets_sz, montage, feats_file):
         classification[datasets_sz[i]]['train results'] = cv_results
         
 
-    with open('classification_{}.json'.format(montage), 'w') as f:
+    with open('classification_{}_2.json'.format(montage), 'w') as f:
         json.dump(classification, f)
         
     return classification
