@@ -154,7 +154,7 @@ def offline_training(datasets, datasets_sz, montage, feats_file):
         y = dataset[1]
         
         # Classifier grid search
-        param_grid = {'C': [0.1, 1], 'gamma': [0.1, 0.01, 0.001], 'kernel': ['rbf']}
+        param_grid = {'C': [0.1, 1, 10], 'gamma': [0.1, 0.01, 0.001], 'kernel': ['rbf']}
         grid = GridSearchCV(svm.SVC(), param_grid, refit=True, verbose=2, n_jobs=-1)  
         
         grid.fit(X, y)

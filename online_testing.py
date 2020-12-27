@@ -1,5 +1,7 @@
 from sklearn.metrics import classification_report
 import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
 import subprocess
 import json
 import pickle
@@ -182,6 +184,14 @@ def online_testing(datasets, datasets_sz, t_constraint, montage, labels, feats_f
         print('--- {} ---'.format(datasets_sz[i]))
         print(report)    
         report_full[datasets_sz[i]] = classification_report(YT[datasets_sz[i]], YP[datasets_sz[i]], labels=np.unique(YT[datasets_sz[i]]), target_names=['bckg', datasets_sz[i]], output_dict=True)
+        
+        cf_matrix = confusion_matrix(YT[datasets_sz[i]], YP[datasets_sz[i]])
+        print('{}: {}'.format(datasets_sz[i], (cf_matrix[0,1] / sum(sum(cf_matrix))) * 3600))
+        report_full[datasets_sz[i]]['FPR'] = (cf_matrix[0,1] / sum(sum(cf_matrix))) * 3600
+        report_full[datasets_sz[i]]['specificity'] = cf_matrix[0,0] / (cf_matrix[0,0] + cf_matrix[1,0])
+        plt.figure()
+        sns.heatmap(cf_matrix, annot=True)
+        plt.title(datasets_sz[i])
         
         
         if  feats_file.split('_')[1] == '10':
