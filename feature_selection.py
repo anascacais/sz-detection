@@ -121,7 +121,7 @@ def select_features(datasets, datasets_test, datasets_sz, feature_list, drive, m
 
 def main(argv):
     
-    montage = '02'
+    montage = '0103'
     epoch = '10'
     
     try:

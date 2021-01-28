@@ -144,8 +144,6 @@ def balance_dataset(datasets, datasets_sz):
 
 def offline_training(datasets, datasets_sz, montage, feats_file):    
     
-    classification = dict.fromkeys(datasets_sz, {})
-    
     for i,dataset in enumerate(datasets):
         
         print('  training classifier for {}'.format(datasets_sz[i]))
@@ -159,22 +157,21 @@ def offline_training(datasets, datasets_sz, montage, feats_file):
         
         grid.fit(X, y)
         model = grid.best_estimator_
-        pickle.dump(model, open('classifiers\\svm_{}_{}_{}_2'.format(montage, datasets_sz[i], feats_file.split('_')[1]), 'wb'))
+        pickle.dump(model, open('classifiers\\svm_{}_{}_{}'.format(montage, datasets_sz[i], feats_file.split('_')[1]), 'wb'))
         
-        
+        classification = {}
         best_params = {}
         for p in grid.best_params_.keys():
             best_params[p] = str(grid.best_params_[p])      
-        classification[datasets_sz[i]]['best params'] = best_params
+        classification['best params'] = best_params
         
         cv_results = {}
         for r in grid.cv_results_.keys():
             cv_results[r] = str(grid.cv_results_[r])
-        classification[datasets_sz[i]]['train results'] = cv_results
-        
+        classification['train results'] = cv_results
 
-    with open('classification_{}_2.json'.format(montage), 'w') as f:
-        json.dump(classification, f)
+        with open('training_{}_{}.json'.format(montage, datasets_sz[i]), 'w') as f:
+            json.dump(classification, f)
         
     return classification
     
@@ -182,7 +179,7 @@ def offline_training(datasets, datasets_sz, montage, feats_file):
 
 def main(argv):
     
-    montage = '02'
+    montage = '0103'
     epoch = '10'
     
     try:
